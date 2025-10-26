@@ -30,7 +30,10 @@ namespace DatingAppWebApi
 
             app.UseAuthorization();
 
+            app.UseCors(x=> {
 
+                x.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin();
+            });
             app.MapControllers();
 
             app.Run();

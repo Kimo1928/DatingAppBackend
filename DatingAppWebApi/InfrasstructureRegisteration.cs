@@ -12,7 +12,7 @@ namespace DatingAppWebApi
             {
                 options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
             });
-
+            services.AddCors();
             return services;
         }
     }

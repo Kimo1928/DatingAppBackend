@@ -6,15 +6,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DatingAppWebApi.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class UsersController : ControllerBase
+   
+    public class UsersController : BaseController
     {
-        private readonly DatingAppDbContext _context;
-        public UsersController(DatingAppDbContext context)
-        {
-            _context=context;
+        public UsersController(DatingAppDbContext context):base(context){ 
+        
+        
         }
+
         [HttpGet]
         public async Task<IActionResult> GetAllUsers()
         {
