@@ -1,5 +1,6 @@
 ﻿using DatingAppWebApi.Data;
 using DatingAppWebApi.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -7,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace DatingAppWebApi.Controllers
 {
    
+     [Authorize]
     public class UsersController : BaseController
     {
         public UsersController(DatingAppDbContext context):base(context){ 
@@ -14,7 +16,7 @@ namespace DatingAppWebApi.Controllers
         
         }
 
-        [HttpGet]
+        [HttpGet]   
         public async Task<IActionResult> GetAllUsers()
         {
             var users = await _context.Users.AsNoTracking().ToListAsync();

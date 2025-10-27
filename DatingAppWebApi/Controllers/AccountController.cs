@@ -1,15 +1,18 @@
 ﻿using DatingAppWebApi.Data;
 using DatingAppWebApi.DTOs;
 using DatingAppWebApi.Entities;
+using DatingAppWebApi.Extensions;
+using DatingAppWebApi.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
+using System.Text;
 
 namespace DatingAppWebApi.Controllers
 {
    
-    public class AccountController(DatingAppDbContext context) : BaseController(context)
+    public class AccountController(DatingAppDbContext context,ITokenService tokenService) : BaseController(context)
     {
 
             [HttpPost("Register")]
@@ -32,7 +35,7 @@ namespace DatingAppWebApi.Controllers
             };
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
-            return Ok(user);
+            return Ok(user.ToDto(tokenService));
 
         }
 
@@ -43,5 +46,30 @@ namespace DatingAppWebApi.Controllers
         }
 
 
+        [HttpPost("login")]
+
+        public async Task<IActionResult> login([FromBody] LoginDTO loginDTO) {
+
+            var user = await   _context.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == loginDTO.Email.ToLower());
+
+
+            if((user == null))
+            {
+                return Unauthorized("Invalid Email or password");
+            }
+
+            using 
+             var hmac = new HMACSHA512(user.PasswordSalt);
+            var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(loginDTO.Password));
+            for (int i = 0; i < computedHash.Length; i++)
+            {
+                if (computedHash[i] != user.PasswordHash[i])
+                {
+                    return Unauthorized("Invalid Email or password");
+                }
+            }
+            return Ok(user.ToDto(tokenService));
+
+        }
     }
 }

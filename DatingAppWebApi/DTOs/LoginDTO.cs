@@ -1,4 +1,6 @@
-﻿namespace DatingAppWebApi.DTOs
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace DatingAppWebApi.DTOs
 {
     public class LoginDTO
     {
@@ -6,6 +8,6 @@
         public string Email { get; set; }
 
         [Required]
-        public string password { get; set; }
+        public string Password { get; set; }
     }
 }

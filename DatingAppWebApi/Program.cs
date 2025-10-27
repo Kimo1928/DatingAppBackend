@@ -25,15 +25,18 @@ namespace DatingAppWebApi
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
-          
+
             //Middlewares Part in my program.cs
+
+
+            app.UseCors(x => {
+
+                x.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin();
+            }); 
+            app.UseAuthentication(); 
 
             app.UseAuthorization();
 
-            app.UseCors(x=> {
-
-                x.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin();
-            });
             app.MapControllers();
 
             app.Run();

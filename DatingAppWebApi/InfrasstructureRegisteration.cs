@@ -1,5 +1,9 @@
 ﻿using DatingAppWebApi.Data;
+using DatingAppWebApi.Interfaces;
+using DatingAppWebApi.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace DatingAppWebApi
 {
@@ -13,6 +17,22 @@ namespace DatingAppWebApi
                 options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
             });
             services.AddCors();
+            services.AddScoped<ITokenService, TokenService>();
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options => { 
+                var tokenKey = configuration["TokenKey"] ?? throw new Exception("Cannot get Token Key-program.cs ");
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+
+                        ValidateIssuerSigningKey =true,
+                        IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(tokenKey)),
+                        ValidateIssuer = false,
+                        ValidateAudience = false
+
+                    };
+
+
+                });
             return services;
         }
     }
