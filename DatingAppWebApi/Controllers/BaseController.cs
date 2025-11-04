@@ -13,5 +13,8 @@ namespace DatingAppWebApi.Controllers
         {
             _context = context;
         }
+        public BaseController()
+        {
+        }
     }
 }

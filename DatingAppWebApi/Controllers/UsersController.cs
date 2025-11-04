@@ -1,4 +1,5 @@
-﻿using DatingAppWebApi.Data;
+﻿using DatingAppWebApi.ActionFilters;
+using DatingAppWebApi.Data;
 using DatingAppWebApi.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -15,6 +16,8 @@ namespace DatingAppWebApi.Controllers
         
         
         }
+
+        [ServiceFilter (typeof (UserActionFilter))]
 
         [HttpGet]   
         public async Task<IActionResult> GetAllUsers()

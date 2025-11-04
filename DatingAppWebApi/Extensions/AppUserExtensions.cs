@@ -8,7 +8,7 @@ namespace DatingAppWebApi.Extensions
     {
         public static UserDTO ToDto(this AppUser user, ITokenService tokenService) {
 
-            return new UserDTO { DisplayName = user.DisplayName, Id = user.Id, Email = user.Email, Token = tokenService.CreateToken(user) } };
+            return new UserDTO { DisplayName = user.DisplayName, Id = user.Id, Email = user.Email, Token = tokenService.CreateToken(user) } ;
         
         }
     }

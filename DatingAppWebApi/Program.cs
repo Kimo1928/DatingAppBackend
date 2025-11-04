@@ -28,7 +28,7 @@ namespace DatingAppWebApi
 
             //Middlewares Part in my program.cs
 
-
+            app.UseMiddleware<Middleware.ExceptionMiddleware>();
             app.UseCors(x => {
 
                 x.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin();

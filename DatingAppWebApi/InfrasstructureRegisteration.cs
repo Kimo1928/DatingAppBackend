@@ -1,4 +1,5 @@
-﻿using DatingAppWebApi.Data;
+﻿using DatingAppWebApi.ActionFilters;
+using DatingAppWebApi.Data;
 using DatingAppWebApi.Interfaces;
 using DatingAppWebApi.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -15,6 +16,11 @@ namespace DatingAppWebApi
             services.AddDbContext<DatingAppDbContext>(options =>
             {
                 options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
+            });
+            services.AddScoped<UserActionFilter>();
+            services.AddControllers(options =>
+            {
+                options.Filters.Add(new UserActionFilter());
             });
             services.AddCors();
             services.AddScoped<ITokenService, TokenService>();
