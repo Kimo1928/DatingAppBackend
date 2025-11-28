@@ -1,6 +1,7 @@
 ﻿using DatingAppWebApi.ActionFilters;
 using DatingAppWebApi.Data;
 using DatingAppWebApi.Interfaces;
+using DatingAppWebApi.Repositories;
 using DatingAppWebApi.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +14,7 @@ namespace DatingAppWebApi
         public static IServiceCollection AddInfrastructureServices(this IServiceCollection services ,IConfiguration configuration) {
 
             services.AddControllers();
+            services.AddScoped<IUserRepository, UserRepository>();
             services.AddDbContext<DatingAppDbContext>(options =>
             {
                 options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));

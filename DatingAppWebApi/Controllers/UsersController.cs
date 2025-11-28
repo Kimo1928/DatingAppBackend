@@ -1,6 +1,9 @@
-﻿using DatingAppWebApi.ActionFilters;
+﻿using AutoMapper;
+using DatingAppWebApi.ActionFilters;
 using DatingAppWebApi.Data;
 using DatingAppWebApi.Entities;
+using DatingAppWebApi.Interfaces;
+using DatingAppWebApi.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -10,20 +13,17 @@ namespace DatingAppWebApi.Controllers
 {
    
      [Authorize]
-    public class UsersController : BaseController
+    public class UsersController(IUserRepository userRepository,Mapper mapper): BaseController
     {
-        public UsersController(DatingAppDbContext context):base(context){ 
         
-        
-        }
-
         [ServiceFilter (typeof (UserActionFilter))]
 
         [HttpGet]   
         public async Task<IActionResult> GetAllUsers()
         {
-            var users = await _context.Users.AsNoTracking().ToListAsync();
-            return Ok(users);
+            var users = await userRepository.GetAllUsersAsync();
+            var usersToReturn=mapper.Map<IReadOnlyList<User>>(users);
+            return Ok(usersToReturn);
         }
 
         /*
@@ -38,12 +38,19 @@ namespace DatingAppWebApi.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetUserById(string id) { 
         
-        var user =await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+        var user =await userRepository.GetUserByIdAsync(id);
             if (user == null)
             {
                 return NotFound();
             }
-            return Ok(user);
+            var userToReturn = mapper.Map<User>(user);
+            return Ok(userToReturn);
+        }
+        [HttpGet("{id}/photos")]
+        public async Task<IActionResult> GetUserPhotos(string id)
+        {
+            var photos = await userRepository.GetUserPhotos(id);
+            return Ok(photos);
         }
     }
 }

@@ -33,7 +33,7 @@ namespace DatingAppWebApi.Controllers
 
 
             };
-            _context.Users.Add(user);
+            _context.AppUsers.Add(user);
             await _context.SaveChangesAsync();
             return Ok(user.ToDto(tokenService));
 
@@ -41,7 +41,7 @@ namespace DatingAppWebApi.Controllers
 
         private Task<bool> EmailExists(string email) {
 
-            return _context.Users.AnyAsync(x => x.Email.ToLower() == email.ToLower());
+            return _context.AppUsers.AnyAsync(x => x.Email.ToLower() == email.ToLower());
         
         }
 
@@ -50,7 +50,7 @@ namespace DatingAppWebApi.Controllers
 
         public async Task<IActionResult> login([FromBody] LoginDTO loginDTO) {
 
-            var user = await   _context.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == loginDTO.Email.ToLower());
+            var user = await   _context.AppUsers.FirstOrDefaultAsync(u => u.Email.ToLower() == loginDTO.Email.ToLower());
 
 
             if((user == null))

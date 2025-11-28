@@ -6,7 +6,7 @@ namespace DatingAppWebApi
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public  static  void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -38,7 +38,19 @@ namespace DatingAppWebApi
             app.UseAuthorization();
 
             app.MapControllers();
-
+            using var scope = app.Services.CreateScope();
+            var services = scope.ServiceProvider;
+             try 
+            {
+                var context = scope.ServiceProvider.GetRequiredService<DatingAppDbContext>();
+                 context.Database.MigrateAsync();
+                 Seed.SeedUsers(context).Wait();
+            }
+            catch (Exception ex)
+            {
+                var logger = services.GetRequiredService<ILogger<Program>>();
+                logger.LogError(ex, "An error occurred during migration");
+            }
             app.Run();
         }
     }
