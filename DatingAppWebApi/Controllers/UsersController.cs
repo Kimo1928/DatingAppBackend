@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using DatingAppWebApi.ActionFilters;
 using DatingAppWebApi.Data;
+using DatingAppWebApi.DTOs;
 using DatingAppWebApi.Entities;
 using DatingAppWebApi.Interfaces;
 using DatingAppWebApi.Repositories;
@@ -13,7 +14,7 @@ namespace DatingAppWebApi.Controllers
 {
    
      [Authorize]
-    public class UsersController(IUserRepository userRepository,Mapper mapper): BaseController
+    public class UsersController(IUserRepository userRepository,IMapper mapper): BaseController
     {
         
         [ServiceFilter (typeof (UserActionFilter))]
@@ -22,7 +23,7 @@ namespace DatingAppWebApi.Controllers
         public async Task<IActionResult> GetAllUsers()
         {
             var users = await userRepository.GetAllUsersAsync();
-            var usersToReturn=mapper.Map<IReadOnlyList<User>>(users);
+            var usersToReturn=mapper.Map<IReadOnlyList<GetUserDTO>>(users);
             return Ok(usersToReturn);
         }
 

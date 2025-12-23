@@ -5,16 +5,19 @@ using DatingAppWebApi.Repositories;
 using DatingAppWebApi.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using System.Reflection;
 
 namespace DatingAppWebApi
 {
-    public  static class InfrasstructureRegisteration
+    public static class InfrasstructureRegisteration
     {
-        public static IServiceCollection AddInfrastructureServices(this IServiceCollection services ,IConfiguration configuration) {
-
+        public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
+        {
             services.AddControllers();
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddAutoMapper(cfg => cfg.AddMaps(Assembly.GetExecutingAssembly()));
             services.AddDbContext<DatingAppDbContext>(options =>
             {
                 options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
@@ -27,19 +30,16 @@ namespace DatingAppWebApi
             services.AddCors();
             services.AddScoped<ITokenService, TokenService>();
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(options => { 
-                var tokenKey = configuration["TokenKey"] ?? throw new Exception("Cannot get Token Key-program.cs ");
+                .AddJwtBearer(options =>
+                {
+                    var tokenKey = configuration["TokenKey"] ?? throw new Exception("Cannot get Token Key-program.cs ");
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
-
-                        ValidateIssuerSigningKey =true,
+                        ValidateIssuerSigningKey = true,
                         IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(tokenKey)),
                         ValidateIssuer = false,
                         ValidateAudience = false
-
                     };
-
-
                 });
             return services;
         }

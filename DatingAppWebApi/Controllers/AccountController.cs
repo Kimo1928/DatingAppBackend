@@ -50,25 +50,25 @@ namespace DatingAppWebApi.Controllers
 
         public async Task<IActionResult> login([FromBody] LoginDTO loginDTO) {
 
-            var user = await   _context.AppUsers.FirstOrDefaultAsync(u => u.Email.ToLower() == loginDTO.Email.ToLower());
+            var Appuser = await   _context.AppUsers.FirstOrDefaultAsync(u => u.Email.ToLower() == loginDTO.Email.ToLower());
 
 
-            if((user == null))
+            if((Appuser == null))
             {
                 return Unauthorized("Invalid Email or password");
             }
 
             using 
-             var hmac = new HMACSHA512(user.PasswordSalt);
+             var hmac = new HMACSHA512(Appuser.PasswordSalt);
             var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(loginDTO.Password));
             for (int i = 0; i < computedHash.Length; i++)
             {
-                if (computedHash[i] != user.PasswordHash[i])
+                if (computedHash[i] != Appuser.PasswordHash[i])
                 {
                     return Unauthorized("Invalid Email or password");
                 }
             }
-            return Ok(user.ToDto(tokenService));
+            return Ok(Appuser.ToDto(tokenService));
 
         }
     }
