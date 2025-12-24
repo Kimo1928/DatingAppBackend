@@ -21,9 +21,12 @@ namespace DatingAppWebApi.Repositories
         public async Task<User?> GetUserByIdAsync(string id)
         {
             
-            return await _context.Users.FirstOrDefaultAsync(u => u.Id == id); ;
+            return await _context.Users
+                .FirstOrDefaultAsync(u => u.Id == id); ;
 
         }
+
+       
 
         public async Task<IReadOnlyList<Photo>> GetUserPhotos(string userId)
         {
@@ -40,6 +43,11 @@ namespace DatingAppWebApi.Repositories
         {
             _context.Entry(user).State = EntityState.Modified;
         
+        }
+        public Task<User?> GetUserForUpdate(string userId)
+        {
+            return _context.Users.Include(x => x.AppUser)
+                .FirstOrDefaultAsync(u => u.Id == userId);
         }
     }
 }

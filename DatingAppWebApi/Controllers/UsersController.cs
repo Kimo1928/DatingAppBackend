@@ -3,12 +3,14 @@ using DatingAppWebApi.ActionFilters;
 using DatingAppWebApi.Data;
 using DatingAppWebApi.DTOs;
 using DatingAppWebApi.Entities;
+using DatingAppWebApi.Extensions;
 using DatingAppWebApi.Interfaces;
 using DatingAppWebApi.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace DatingAppWebApi.Controllers
 {
@@ -52,6 +54,20 @@ namespace DatingAppWebApi.Controllers
         {
             var photos = await userRepository.GetUserPhotos(id);
             return Ok(photos);
+        }
+
+        public async Task<IActionResult> UpdateUser(UserUpdateDTO userUpdateDTO) {
+            var userId=User.GetUserId();
+            var user = await userRepository.GetUserForUpdate(userId);
+            if (user == null) return NotFound();
+            user.AppUser.DisplayName = userUpdateDTO.DisplayName ?? user.AppUser.DisplayName;
+            user.DisplayName = userUpdateDTO.DisplayName ?? user.DisplayName;
+            user.City = userUpdateDTO.City ?? user.City;
+            user.Country = userUpdateDTO.Country ?? user.Country;
+            user.Description = userUpdateDTO.Description ?? user.Description;
+            if(await userRepository.SaveAllAsync())
+            return NoContent();
+            return BadRequest("Failed to update user");
         }
     }
 }

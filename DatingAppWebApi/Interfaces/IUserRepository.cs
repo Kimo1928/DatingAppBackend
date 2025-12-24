@@ -17,6 +17,8 @@ namespace DatingAppWebApi.Interfaces
 
         public Task<IReadOnlyList<Photo>> GetUserPhotos(string userId);
 
+        public Task<User?> GetUserForUpdate(string userId);
+
 
     }
 }
