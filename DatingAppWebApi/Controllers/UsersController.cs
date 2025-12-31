@@ -16,7 +16,7 @@ namespace DatingAppWebApi.Controllers
 {
    
      [Authorize]
-    public class UsersController(IUserRepository userRepository,IMapper mapper): BaseController
+    public class UsersController(IUserRepository userRepository,IMapper mapper,IPhotoService photoService): BaseController
     {
         
         [ServiceFilter (typeof (UserActionFilter))]
@@ -69,5 +69,79 @@ namespace DatingAppWebApi.Controllers
             return NoContent();
             return BadRequest("Failed to update user");
         }
+
+
+        [HttpPost("add-photo")]
+        public async Task<IActionResult> uploadPhoto([FromForm]IFormFile file) {
+            var user = await userRepository.GetUserForUpdate(User.GetUserId());
+            if(user==null) return BadRequest("User not found");
+            var result = await photoService.UploadPhotoAsync(file);
+            if (result.Error != null) return BadRequest(result.Error.Message);
+            var photo = new Photo
+            {
+                Url = result.SecureUrl.AbsoluteUri,
+                PublicId = result.PublicId,
+                UserId = user.Id
+            };
+            if (user.ImageUrl==null)
+            {
+                user.ImageUrl = photo.Url;
+                user.AppUser.ImageUrl = photo.Url;
+            }
+            user.Photos.Add(photo);
+            if (await userRepository.SaveAllAsync())
+            {
+                return Ok(photo);
+            }
+            return BadRequest("Problem adding photo");
+        }
+
+
+        [HttpPut("set-main-photo/{photoId}")]
+        public async Task<IActionResult> changeMainPhoto(int photoId) { 
+        var user = await userRepository.GetUserForUpdate(User.GetUserId());
+            if (user == null) return BadRequest("User not found");
+            var photo = user.Photos.FirstOrDefault(p => p.Id == photoId);
+            if (photo == null) return BadRequest("Photo not found");
+            if(user.ImageUrl==photo.Url) return BadRequest("This is already your main photo");
+            user.ImageUrl = photo.Url;
+            user.AppUser.ImageUrl = photo.Url;
+            if (await userRepository.SaveAllAsync())
+            {
+                return NoContent();
+            }
+            return BadRequest("Failed to set main photo");
+
+
+        }
+
+
+
+
+        [HttpDelete("{photoId}")]
+        public async Task<IActionResult> DeleteImage(int photoId) { 
+        
+        var user = await userRepository.GetUserForUpdate(User.GetUserId());
+            if (user == null) return BadRequest("User not found");
+            var photo = user.Photos.FirstOrDefault(p => p.Id == photoId);
+            if (photo == null) return BadRequest("Photo not found");
+            if (user.ImageUrl == photo.Url) return BadRequest("You cannot delete your main photo");
+            if (photo.PublicId != null)
+            {
+                var result = await photoService.DeletePhotoAsync(photo.PublicId);
+                if (result.Error != null) return BadRequest(result.Error.Message);
+            }
+            user.Photos.Remove(photo);
+            if (await userRepository.SaveAllAsync())
+            {
+                return Ok();
+            }
+            return BadRequest("Failed to delete photo");
+
+        }
+
+
+
+
     }
 }

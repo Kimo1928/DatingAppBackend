@@ -47,6 +47,7 @@ namespace DatingAppWebApi.Repositories
         public Task<User?> GetUserForUpdate(string userId)
         {
             return _context.Users.Include(x => x.AppUser)
+                .Include(x => x.Photos)
                 .FirstOrDefaultAsync(u => u.Id == userId);
         }
     }

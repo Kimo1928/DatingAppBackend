@@ -1,5 +1,6 @@
 ﻿using DatingAppWebApi.ActionFilters;
 using DatingAppWebApi.Data;
+using DatingAppWebApi.Helpers;
 using DatingAppWebApi.Interfaces;
 using DatingAppWebApi.Repositories;
 using DatingAppWebApi.Services;
@@ -17,7 +18,9 @@ namespace DatingAppWebApi
         {
             services.AddControllers();
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IPhotoService, PhotoService>();
             services.AddAutoMapper(cfg => cfg.AddMaps(Assembly.GetExecutingAssembly()));
+            services.Configure<CloudinarySettings>(configuration.GetSection("CloudinarySettings"));
             services.AddDbContext<DatingAppDbContext>(options =>
             {
                 options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
