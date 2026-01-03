@@ -6,7 +6,7 @@ namespace DatingAppWebApi.DTOs
     {
         [Required]
         [RegularExpression("([a-zA-Z0-9_\\s]+)")]
-        public  string DisplayName { get; set; }
+        public  string UserName { get; set; }
 
 
         [Required]
@@ -18,5 +18,16 @@ namespace DatingAppWebApi.DTOs
         [Required]
         [MinLength(4)]
         public  string Password { get; set; }
+
+        [Required]
+        public string Gender { get; set; }
+        [Required]
+        public string City { get; set; }
+
+        [Required]
+        public string Country { get; set; }
+
+        [Required]
+        public DateOnly DateOfBirth { get; set; }
     }
 }
