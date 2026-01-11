@@ -4,6 +4,7 @@ using DatingAppWebApi.Data;
 using DatingAppWebApi.DTOs;
 using DatingAppWebApi.Entities;
 using DatingAppWebApi.Extensions;
+using DatingAppWebApi.Helpers;
 using DatingAppWebApi.Interfaces;
 using DatingAppWebApi.Repositories;
 using Microsoft.AspNetCore.Authorization;
@@ -22,10 +23,17 @@ namespace DatingAppWebApi.Controllers
         [ServiceFilter (typeof (UserActionFilter))]
 
         [HttpGet]   
-        public async Task<IActionResult> GetAllUsers()
-        {
-            var users = await userRepository.GetAllUsersAsync();
-            var usersToReturn=mapper.Map<IReadOnlyList<GetUserDTO>>(users);
+        public async Task<IActionResult> GetAllUsers([FromQuery] UserParams userParams)
+            {
+            userParams.CurrentUserId = User.GetUserId();
+            var users = await userRepository.GetAllUsersAsync(userParams);
+            var mappedUsers = mapper.Map<IReadOnlyList<GetUserDTO>>(users.Items);
+            var usersToReturn = new PaginatedResult<GetUserDTO>
+            {
+                Metadata = users.Metadata,
+                Items = mappedUsers.ToList()
+            };
+
             return Ok(usersToReturn);
         }
 

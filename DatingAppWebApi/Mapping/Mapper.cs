@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using DatingAppWebApi.DTOs;
 using DatingAppWebApi.Entities;
+using DatingAppWebApi.Helpers;
 
 namespace DatingAppWebApi.Mapping
 {
@@ -9,6 +10,8 @@ namespace DatingAppWebApi.Mapping
         public Mapper()
         {
             CreateMap<User, GetUserDTO>();
+
+    
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using DatingAppWebApi.Data;
 using DatingAppWebApi.Entities;
+using DatingAppWebApi.Helpers;
 using DatingAppWebApi.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,10 +13,24 @@ namespace DatingAppWebApi.Repositories
         {
             _context = context;
         }
-        public async Task<IReadOnlyList<User>> GetAllUsersAsync()
+        public async Task<PaginatedResult<User>> GetAllUsersAsync(UserParams userParams)
         {
-           var users= await _context.Users.ToListAsync();
-            return users;
+           var query=  _context.Users.AsQueryable();
+
+            query = query.Where(x => x.Id != userParams.CurrentUserId);
+
+            if (userParams.Gender!=null) {
+                query = query.Where(x => x.Gender == userParams.Gender);
+            }
+            var minDob= DateOnly.FromDateTime(DateTime.Today.AddYears(-userParams.MaxAge - 1));
+            var maxDob = DateOnly.FromDateTime(DateTime.Today.AddYears(-userParams.MinAge));
+            query = query.Where(x => x.DateOfBirth >= minDob && x.DateOfBirth <= maxDob);
+            query = userParams.OrderBy switch
+            {
+                "created" => query.OrderByDescending(x => x.Created),
+                _ => query.OrderBy(x => x.LastActive)
+            };
+            return await PaginationHelper.CreateAsync(query, userParams.PageNumber, userParams.PageSize);
         }
 
         public async Task<User?> GetUserByIdAsync(string id)

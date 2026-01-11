@@ -1,12 +1,13 @@
 ﻿using DatingAppWebApi.Data;
 using DatingAppWebApi.Entities;
+using DatingAppWebApi.Helpers;
 
 namespace DatingAppWebApi.Interfaces
 {
     public interface IUserRepository
     {
 
-        public Task<IReadOnlyList<User>> GetAllUsersAsync();
+        public Task<PaginatedResult<User>> GetAllUsersAsync(UserParams userParams);
 
         public void UpdateUser(User user);
 
