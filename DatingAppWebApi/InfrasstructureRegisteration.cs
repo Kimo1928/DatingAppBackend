@@ -18,6 +18,7 @@ namespace DatingAppWebApi
         {
             services.AddControllers();
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<ILikesRepository, LikesRepository>();
             services.AddScoped<IPhotoService, PhotoService>();
             services.AddAutoMapper(cfg => cfg.AddMaps(Assembly.GetExecutingAssembly()));
             services.Configure<CloudinarySettings>(configuration.GetSection("CloudinarySettings"));

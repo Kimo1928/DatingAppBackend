@@ -24,6 +24,14 @@ namespace DatingAppWebApi.Entities
         public string? Description { get; set; }
         public required string Country { get; set; }
 
+        [JsonIgnore]
+        public List<UserLike> LikedByUsers { get; set; } = [];
+
+        [JsonIgnore]
+
+        public List<UserLike> LikedUsers { get; set; } = [];
+
+
 
         [JsonIgnore]
 
@@ -31,6 +39,9 @@ namespace DatingAppWebApi.Entities
 
         [ForeignKey(nameof(Id))]
         public virtual AppUser AppUser { get; set; }=null!;
+
+
+
 
          
     }
