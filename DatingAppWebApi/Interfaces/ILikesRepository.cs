@@ -1,4 +1,5 @@
 ﻿using DatingAppWebApi.Entities;
+using DatingAppWebApi.Helpers;
 
 namespace DatingAppWebApi.Interfaces
 {
@@ -6,7 +7,7 @@ namespace DatingAppWebApi.Interfaces
     {
         Task<UserLike?> GetUserLike(string sourceUserId, string likedUserId);
 
-        Task<IReadOnlyList<User>> GetUserLikes(string predicate , string userId);
+        Task<PaginatedResult<User>> GetUserLikes(LikesParams likesParams);
 
 
         Task<IReadOnlyList<string>> GetCurrentUserLikeIds(string userId);

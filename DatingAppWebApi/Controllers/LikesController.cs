@@ -2,16 +2,18 @@
 using DatingAppWebApi.DTOs;
 using DatingAppWebApi.Entities;
 using DatingAppWebApi.Extensions;
+using DatingAppWebApi.Helpers;
 using DatingAppWebApi.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DatingAppWebApi.Controllers
 {
-  
+    [Authorize]
     public class LikesController(ILikesRepository likesRepository, IMapper mapper) : BaseController
     {
-
+        
 
 
         [HttpPost("{targetUserId}")]
@@ -47,12 +49,17 @@ namespace DatingAppWebApi.Controllers
 
         }
         [HttpGet]
-        public async Task<ActionResult<IReadOnlyList<GetUserDTO>>> GetUserLikes(string prediate) {
+        public async Task<ActionResult<IReadOnlyList<GetUserDTO>>> GetUserLikes([FromQuery]LikesParams likesParams) {
+            likesParams.UserId = User.GetUserId();
+            var users = await likesRepository.GetUserLikes(likesParams);
+            var mappedUsers = mapper.Map<IReadOnlyList<GetUserDTO>>(users.Items);
+            var usersToReturn = new PaginatedResult<GetUserDTO>
+            {
+                Metadata = users.Metadata,
+                Items = mappedUsers.ToList()
+            };
 
-            var users = await likesRepository.GetUserLikes(prediate,User.GetUserId());
-            var usersToReturn= mapper.Map<IReadOnlyList<GetUserDTO>>(users);
-
-            return Ok(users);
+            return Ok(usersToReturn);
         
         }
     }

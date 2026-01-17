@@ -1,5 +1,6 @@
 ﻿using DatingAppWebApi.Data;
 using DatingAppWebApi.Entities;
+using DatingAppWebApi.Helpers;
 using DatingAppWebApi.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -32,20 +33,25 @@ namespace DatingAppWebApi.Repositories
                 (sourceUserId,likedUserId);
         }
 
-        public async Task<IReadOnlyList<User>> GetUserLikes(string predicate, string userId)
+        public async Task<PaginatedResult<User>> GetUserLikes(LikesParams likesParams)
         {
             var query = _context.Likes.AsQueryable();
-            switch (predicate) {
+            IQueryable<User> result;
+            switch (likesParams.Predicate) {
 
                 case "liked":
-                    return await query.Where(x => x.SourceUserId == userId).Select(x => x.TargetUser).ToListAsync();
+                    result =  query.Where(x => x.SourceUserId == likesParams.UserId).Select(x => x.TargetUser);
+                    break;
                 case "likedBy":
-                    return await query.Where(x => x.TargetUserId == userId).Select(x => x.SourceUser).ToListAsync();
+                    result= query.Where(x => x.TargetUserId == likesParams.UserId).Select(x => x.SourceUser);
+                    break;
 
-                 default:
-                    var likeIds = await GetCurrentUserLikeIds(userId);
-                    return await query.Where(x => likeIds.Contains(x.SourceUserId) && x.TargetUserId==userId).Select(x => x.SourceUser).ToListAsync();
+                default:
+                    var likeIds = await GetCurrentUserLikeIds(likesParams.UserId);
+                    result= query.Where(x => likeIds.Contains(x.SourceUserId) && x.TargetUserId==likesParams.UserId).Select(x => x.SourceUser);
+                    break;
             }
+            return await PaginationHelper.CreateAsync(result, likesParams.PageNumber, likesParams.PageSize);
 
         }
 
