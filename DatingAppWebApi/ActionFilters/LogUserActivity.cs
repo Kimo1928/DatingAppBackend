@@ -17,7 +17,7 @@ namespace DatingAppWebApi.ActionFilters
             var dbContext = resultContext.HttpContext.RequestServices
                 .GetService<DatingAppWebApi.Data.DatingAppDbContext>();
             if (dbContext == null) { return; }
-            await dbContext.Users.Where(u => u.Id == userId)
+            await dbContext.Members.Where(u => u.Id == userId)
                 .ExecuteUpdateAsync(setters => setters.SetProperty(x=>x.LastActive , DateTime.UtcNow));
 
         }

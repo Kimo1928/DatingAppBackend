@@ -1,12 +1,15 @@
 
 using DatingAppWebApi.Data;
+using DatingAppWebApi.Entities;
+using DatingAppWebApi.SignalR;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace DatingAppWebApi
 {
     public class Program
     {
-        public  static  void Main(string[] args)
+        public  static async  Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -31,25 +34,39 @@ namespace DatingAppWebApi
             app.UseMiddleware<Middleware.ExceptionMiddleware>();
             app.UseCors(x => {
 
-                x.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin();
+                x.AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials()
+                .WithOrigins("http://localhost:4200");
             }); 
             app.UseAuthentication(); 
 
             app.UseAuthorization();
 
             app.MapControllers();
-            using var scope = app.Services.CreateScope();
-            var services = scope.ServiceProvider;
-             try 
+            app.MapHub<PresenceHub>("hubs/presence");
+            app.MapHub<MessageHub>("hubs/messages");
+            using (var scope = app.Services.CreateScope())
             {
-                var context = scope.ServiceProvider.GetRequiredService<DatingAppDbContext>();
-                 context.Database.MigrateAsync();
-                 Seed.SeedUsers(context).Wait();
-            }
-            catch (Exception ex)
-            {
-                var logger = services.GetRequiredService<ILogger<Program>>();
-                logger.LogError(ex, "An error occurred during migration");
+                var services = scope.ServiceProvider;
+
+                try
+                {
+                    var context = services.GetRequiredService<DatingAppDbContext>();
+                    var userManager = services.GetRequiredService<UserManager<AppUser>>();
+                    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+
+                    await context.Database.MigrateAsync();
+
+                    await context.Connections.ExecuteDeleteAsync();
+                    
+                    await Seed.SeedUsers(userManager,roleManager);
+                }
+                catch (Exception ex)
+                {
+                    var logger = services.GetRequiredService<ILogger<Program>>();
+                    logger.LogError(ex, "An error occurred during migration");
+                }
             }
             app.Run();
         }

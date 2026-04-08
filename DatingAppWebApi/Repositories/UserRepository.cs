@@ -15,7 +15,7 @@ namespace DatingAppWebApi.Repositories
         }
         public async Task<PaginatedResult<User>> GetAllUsersAsync(UserParams userParams)
         {
-           var query=  _context.Users.AsQueryable();
+           var query=  _context.Members.AsQueryable();
 
             query = query.Where(x => x.Id != userParams.CurrentUserId);
 
@@ -36,7 +36,7 @@ namespace DatingAppWebApi.Repositories
         public async Task<User?> GetUserByIdAsync(string id)
         {
             
-            return await _context.Users
+            return await _context.Members
                 .FirstOrDefaultAsync(u => u.Id == id); ;
 
         }
@@ -61,7 +61,7 @@ namespace DatingAppWebApi.Repositories
         }
         public Task<User?> GetUserForUpdate(string userId)
         {
-            return _context.Users.Include(x => x.AppUser)
+            return _context.Members.Include(x => x.AppUser)
                 .Include(x => x.Photos)
                 .FirstOrDefaultAsync(u => u.Id == userId);
         }

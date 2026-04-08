@@ -1,15 +1,18 @@
 ﻿using DatingAppWebApi.Entities;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-using Microsoft.EntityFrameworkCore;
+
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DatingAppWebApi.Data
 {
-    public class DatingAppDbContext(DbContextOptions options) : DbContext(options)
+    public class DatingAppDbContext(DbContextOptions options) : IdentityDbContext<AppUser>(options)
     {
-        public  Microsoft.EntityFrameworkCore.DbSet<AppUser> AppUsers { get; set; }
-        public Microsoft.EntityFrameworkCore.DbSet<User> Users { get; set; }
+    
+        public Microsoft.EntityFrameworkCore.DbSet<User> Members { get; set; }
         public Microsoft.EntityFrameworkCore.DbSet<Photo> Photos { get; set; }
+
 
 
         public DbSet<Message> Messages { get; set; }
@@ -17,11 +20,29 @@ namespace DatingAppWebApi.Data
         public DbSet<UserLike> Likes { get; set; }
 
 
+        public DbSet<Group> Groups { get; set; }
+
+        public DbSet<Connection> Connections { get; set; }
+
+
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
 
+            modelBuilder.Entity<IdentityRole>()
+                .HasData(
+            new IdentityRole { Id = "member-id" ,Name = "Member" , NormalizedName="MEMBER"},
+            new IdentityRole { Id = "moderator-id" ,Name = "Moderator" , NormalizedName="MODERATOR"},
+            new IdentityRole { Id = "admin-id" ,Name = "Admin" , NormalizedName="ADMIN" }
+
+            );
+
+
+
+            
+              
             modelBuilder.Entity<Message>()
                 .HasOne(u => u.Recipient)
                 .WithMany(m => m.MessagesReceived)

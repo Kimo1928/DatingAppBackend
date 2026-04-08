@@ -1,4 +1,5 @@
 ﻿using DatingAppWebApi.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -27,6 +28,13 @@ namespace DatingAppWebApi.Controllers
         public IActionResult GetBadrequest() { 
         
         return BadRequest("This was not a good request");
+        }
+
+        [HttpGet("admin-secret")]
+        [Authorize(Roles = "Admin")]
+        public ActionResult<string> GetSecretAdmin() {
+            return Ok("only Admins can see this");
+        
         }
 
     }

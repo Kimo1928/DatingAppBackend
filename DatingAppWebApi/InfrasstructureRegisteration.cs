@@ -1,10 +1,13 @@
 ﻿using DatingAppWebApi.ActionFilters;
 using DatingAppWebApi.Data;
+using DatingAppWebApi.Entities;
 using DatingAppWebApi.Helpers;
 using DatingAppWebApi.Interfaces;
 using DatingAppWebApi.Repositories;
 using DatingAppWebApi.Services;
+using DatingAppWebApi.SignalR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -23,6 +26,18 @@ namespace DatingAppWebApi
             services.AddScoped<IPhotoService, PhotoService>();
             services.AddAutoMapper(cfg => cfg.AddMaps(Assembly.GetExecutingAssembly()));
             services.Configure<CloudinarySettings>(configuration.GetSection("CloudinarySettings"));
+
+            services.AddSignalR();
+            services.AddSingleton<PresenceTracker>();
+            services.AddIdentityCore<AppUser>(opt =>
+            {
+                opt.Password.RequireDigit = false;
+                opt.Password.RequireNonAlphanumeric = false;
+                opt.User.RequireUniqueEmail = true;
+
+            }).AddRoles<IdentityRole>()
+            .AddEntityFrameworkStores<DatingAppDbContext>();
+                ;
             services.AddDbContext<DatingAppDbContext>(options =>
             {
                 options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
@@ -46,7 +61,24 @@ namespace DatingAppWebApi
                         ValidateIssuer = false,
                         ValidateAudience = false
                     };
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnMessageReceived = context =>
+                        {
+                            var accessToken = context.Request.Query["access_token"];
+                            var path = context.HttpContext.Request.Path;
+                            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+                            {
+                                context.Token = accessToken;
+                            }
+                            return Task.CompletedTask;
+                        }
+                    };
                 });
+
+            services.AddAuthorizationBuilder()
+                .AddPolicy("RequireAdminRole", policy => policy.RequireRole("Admin"))
+                .AddPolicy("ModeratePhotoRole", policy => policy.RequireRole("Admin", "Moderator"));
             return services;
         }
     }
