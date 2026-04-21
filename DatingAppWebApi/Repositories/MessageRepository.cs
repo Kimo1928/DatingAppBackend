@@ -83,9 +83,6 @@ namespace DatingAppWebApi.Repositories
                  .ExecuteDeleteAsync();
         }
 
-        public async Task<bool> SaveAllChanges()
-        {
-            return await context.SaveChangesAsync() > 0;
-        }
+        
     }
 }

@@ -11,7 +11,7 @@ namespace DatingAppWebApi.Interfaces
 
         public void UpdateUser(User user);
 
-        Task<bool> SaveAllAsync();
+     
 
         public Task<User?> GetUserByIdAsync(string id);
 

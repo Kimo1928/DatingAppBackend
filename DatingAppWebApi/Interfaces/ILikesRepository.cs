@@ -18,6 +18,6 @@ namespace DatingAppWebApi.Interfaces
         void RemoveLike(UserLike userLike);
 
 
-        Task<bool> SaveAllChanges();
+        
     }
 }

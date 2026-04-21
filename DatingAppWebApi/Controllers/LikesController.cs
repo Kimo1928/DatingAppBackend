@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace DatingAppWebApi.Controllers
 {
     [Authorize]
-    public class LikesController(ILikesRepository likesRepository, IMapper mapper) : BaseController
+    public class LikesController(IUnitOfWork unitOfWork, IMapper mapper) : BaseController
     {
         
 
@@ -20,20 +20,20 @@ namespace DatingAppWebApi.Controllers
         public async Task<IActionResult> ToggleLike(string targetUserId) { 
         var sourceUserId = User.GetUserId();
             if(sourceUserId==targetUserId) return BadRequest("You cannot like yourself");
-            var existingLike = await likesRepository.GetUserLike(sourceUserId, targetUserId);
+            var existingLike = await unitOfWork.LikesRepository.GetUserLike(sourceUserId, targetUserId);
             if (existingLike == null) {
                 var userLike = new UserLike
                 {
                     SourceUserId = sourceUserId,
                     TargetUserId = targetUserId
                 };
-                likesRepository.AddLike(userLike);
+                unitOfWork.LikesRepository.AddLike(userLike);
             }
             else
             {
-                likesRepository.RemoveLike(existingLike);
+                unitOfWork.LikesRepository.RemoveLike(existingLike);
             }
-            if (await likesRepository.SaveAllChanges())
+            if (await unitOfWork.Complete())
             {
                 return Ok();
             }
@@ -45,13 +45,13 @@ namespace DatingAppWebApi.Controllers
         [HttpGet("list")]
         public async Task<ActionResult<IReadOnlyList<string>>> GetCurrentUserLikeIds() { 
         
-        return Ok(await likesRepository.GetCurrentUserLikeIds(User.GetUserId()));
+        return Ok(await unitOfWork.LikesRepository.GetCurrentUserLikeIds(User.GetUserId()));
 
         }
         [HttpGet]
         public async Task<ActionResult<IReadOnlyList<GetUserDTO>>> GetUserLikes([FromQuery]LikesParams likesParams) {
             likesParams.UserId = User.GetUserId();
-            var users = await likesRepository.GetUserLikes(likesParams);
+            var users = await unitOfWork.LikesRepository.GetUserLikes(likesParams);
             var mappedUsers = mapper.Map<IReadOnlyList<GetUserDTO>>(users.Items);
             var usersToReturn = new PaginatedResult<GetUserDTO>
             {

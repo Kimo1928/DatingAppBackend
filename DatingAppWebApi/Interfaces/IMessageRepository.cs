@@ -15,7 +15,7 @@ namespace DatingAppWebApi.Interfaces
 
         Task<IReadOnlyList<MessageDTO>> GetMessageThread(string currentUserId, string recipientId);
 
-        Task<bool> SaveAllChanges();
+        
 
         void AddGroup(Group group);
 

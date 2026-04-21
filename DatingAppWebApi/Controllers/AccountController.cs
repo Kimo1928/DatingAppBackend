@@ -3,6 +3,7 @@ using DatingAppWebApi.DTOs;
 using DatingAppWebApi.Entities;
 using DatingAppWebApi.Extensions;
 using DatingAppWebApi.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -12,36 +13,36 @@ using System.Text;
 
 namespace DatingAppWebApi.Controllers
 {
-   
-    public class AccountController(UserManager<AppUser> userManager,ITokenService tokenService) : BaseController()
+
+    public class AccountController(UserManager<AppUser> userManager, ITokenService tokenService) : BaseController()
     {
 
-            [HttpPost("Register")]
-            public async Task<IActionResult> Register( [FromBody] RegisterDTO registerDTO)
+        [HttpPost("Register")]
+        public async Task<IActionResult> Register([FromBody] RegisterDTO registerDTO)
         {
-           
-           
+
+
             var user = new AppUser
             {
                 Email = registerDTO.Email,
                 DisplayName = registerDTO.UserName,
                 UserName = registerDTO.Email,
-                User =new User {
-                                 DisplayName=registerDTO.UserName,
-                                 Country=registerDTO.Country,
-                                 Gender=registerDTO.Gender,
-                                 City=registerDTO.City ,
-                                 DateOfBirth = registerDTO.DateOfBirth
+                User = new User {
+                    DisplayName = registerDTO.UserName,
+                    Country = registerDTO.Country,
+                    Gender = registerDTO.Gender,
+                    City = registerDTO.City,
+                    DateOfBirth = registerDTO.DateOfBirth
                 }
 
 
             };
-            var result = await userManager.CreateAsync(user,registerDTO.Password);
+            var result = await userManager.CreateAsync(user, registerDTO.Password);
             if (!result.Succeeded)
             { foreach (var error in result.Errors)
-                    ModelState.AddModelError("identity",error.Description);
+                    ModelState.AddModelError("identity", error.Description);
                 return ValidationProblem();
-                
+
             }
             await userManager.AddToRoleAsync(user, "Member");
             await SetRefreshTokenCookie(user);
@@ -49,7 +50,7 @@ namespace DatingAppWebApi.Controllers
 
         }
 
-      
+
 
 
         [HttpPost("login")]
@@ -57,16 +58,16 @@ namespace DatingAppWebApi.Controllers
         public async Task<IActionResult> login([FromBody] LoginDTO loginDTO) {
 
             var Appuser = await userManager.FindByEmailAsync(loginDTO.Email);
-            
 
 
-            if((Appuser == null))
+
+            if ((Appuser == null))
             {
                 return Unauthorized("Invalid Email or password");
             }
-            var result = await userManager.CheckPasswordAsync(Appuser,loginDTO.Password);
-            if (!result) { 
-            return Unauthorized("Invalid Email or Password");
+            var result = await userManager.CheckPasswordAsync(Appuser, loginDTO.Password);
+            if (!result) {
+                return Unauthorized("Invalid Email or Password");
             }
             await SetRefreshTokenCookie(Appuser);
 
@@ -76,17 +77,17 @@ namespace DatingAppWebApi.Controllers
         }
 
 
-        private async Task SetRefreshTokenCookie(AppUser user) { 
-        var refreshToken = tokenService.GenerateRefreshToken();
-        user.RefreshToken = refreshToken;
-        user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+        private async Task SetRefreshTokenCookie(AppUser user) {
+            var refreshToken = tokenService.GenerateRefreshToken();
+            user.RefreshToken = refreshToken;
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
             await userManager.UpdateAsync(user);
 
             var cookieOptions = new CookieOptions
             {
                 HttpOnly = true,
-                Secure = true,                    
-                SameSite = SameSiteMode.None,      
+                Secure = true,
+                SameSite = SameSiteMode.None,
                 Expires = DateTime.UtcNow.AddDays(7),
                 Path = "/"
 
@@ -97,14 +98,33 @@ namespace DatingAppWebApi.Controllers
         public async Task<ActionResult<UserDTO>> RefreshToken() {
 
             var refreshToken = Request.Cookies["refreshToken"];
-            if(refreshToken==null) return NoContent();
+            if (refreshToken == null) return NoContent();
             var user = await userManager.Users.FirstOrDefaultAsync(u => u.RefreshToken == refreshToken &&
             u.RefreshTokenExpiryTime > DateTime.UtcNow
             );
-            if (user==null) return Unauthorized();
+            if (user == null) return Unauthorized();
             await SetRefreshTokenCookie(user);
             return await user.ToDto(tokenService);
-        } 
+        }
+
+        [Authorize]
+        [HttpPost("logout")]
+        public async Task<ActionResult> Logout() {
+            await userManager.Users
+                    .Where(x => x.Id == User.GetUserId())
+                    .ExecuteUpdateAsync(setters => setters.SetProperty(x => x.RefreshToken, _ => null)
+                    .SetProperty(x=>x.RefreshTokenExpiryTime,_=>null)
+                    );
+
+            Response.Cookies.Delete("refreshToken", new CookieOptions
+            {
+                Path = "/",
+                Secure = true,
+                SameSite = SameSiteMode.None
+            });
+            return Ok(); 
+        
+        }
 
 
     }

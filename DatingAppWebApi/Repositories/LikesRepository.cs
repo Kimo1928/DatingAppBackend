@@ -60,10 +60,6 @@ namespace DatingAppWebApi.Repositories
             _context.Likes.Remove(userLike);
         }
 
-        public async Task<bool> SaveAllChanges()
-        {
-         return  await _context.SaveChangesAsync()>0;      
         
-        }
     }
 }

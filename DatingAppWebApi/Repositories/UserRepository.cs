@@ -49,10 +49,7 @@ namespace DatingAppWebApi.Repositories
             return photos;
         }
 
-        public async Task<bool> SaveAllAsync()
-        {
-           return await _context.SaveChangesAsync()>0;
-        }
+        
 
         public void UpdateUser(User user)
         {
